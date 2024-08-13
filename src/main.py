@@ -7,25 +7,29 @@ import requests
 class AnalogClock:
     def __init__(self, root, api_key):
         self.root = root
+        self.api_key = api_key
         self.root.title("Riga Analog Clock")
-        self.canvas = tk.Canvas(root, width=400, height=400, bg="white")
+        self.canvas = tk.Canvas(root, width=400, height=500, bg="white")
         self.canvas.pack()
 
         self.center_x = 200
         self.center_y = 200
         self.clock_radius = 190
-        self.api_key = api_key
 
         self.draw_face()
         self.update_clock()
+        self.update_weather()
+        self.draw_city_name()
 
     def draw_face(self):
+        # Рисуем круг лицевой стороны часов
         self.canvas.create_oval(self.center_x - self.clock_radius,
                                 self.center_y - self.clock_radius,
                                 self.center_x + self.clock_radius,
                                 self.center_y + self.clock_radius,
                                 outline="black", width=5)
 
+        # Рисуем метки и цифры
         for i in range(60):
             angle = math.pi / 30 * i
             x_start = self.center_x + math.cos(angle) * (self.clock_radius - 10)
@@ -62,16 +66,22 @@ class AnalogClock:
         self.root.after(1000, self.update_clock)
 
     def update_weather(self):
+        self.canvas.delete("weather")
         weather_info = get_weather(self.api_key)
         self.canvas.create_text(self.center_x, self.center_y + self.clock_radius + 20,
                                 text=weather_info, font=("Helvetica", 12), anchor="center", tags="weather")
 
         self.root.after(600000, self.update_weather)
 
+    def draw_city_name(self):
+        self.canvas.create_text(self.center_x, self.center_y + self.clock_radius + 60,
+                                text="Riga", font=("Helvetica", 16, "bold"), anchor="center", tags="city")
+
     def draw_hand(self, x, y, angle, length, width=2, color="black"):
         x_end = x + math.cos(angle) * length
         y_end = y + math.sin(angle) * length
         self.canvas.create_line(x, y, x_end, y_end, width=width, fill=color, tags="hands")
+
 
 def get_weather(api_key, city="Riga"):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
@@ -90,8 +100,9 @@ def get_weather(api_key, city="Riga"):
     except Exception as e:
         return f"Error: {e}"
 
+
 if __name__ == "__main__":
     root = tk.Tk()
-    api_key = 'b571467ac02141716798e4555baa2768'
+    api_key = 'b571467ac02141716798e4555baa2768'  # Замените на свой актуальный API ключ
     clock = AnalogClock(root, api_key)
     root.mainloop()
