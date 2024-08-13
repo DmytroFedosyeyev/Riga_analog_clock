@@ -1,9 +1,11 @@
 import tkinter as tk
 import time
 import math
+import requests
+
 
 class AnalogClock:
-    def __init__(self, root):
+    def __init__(self, root, api_key):
         self.root = root
         self.root.title("Riga Analog Clock")
         self.canvas = tk.Canvas(root, width=400, height=400, bg="white")
@@ -12,6 +14,7 @@ class AnalogClock:
         self.center_x = 200
         self.center_y = 200
         self.clock_radius = 190
+        self.api_key = api_key
 
         self.draw_face()
         self.update_clock()
@@ -58,12 +61,37 @@ class AnalogClock:
 
         self.root.after(1000, self.update_clock)
 
+    def update_weather(self):
+        weather_info = get_weather(self.api_key)
+        self.canvas.create_text(self.center_x, self.center_y + self.clock_radius + 20,
+                                text=weather_info, font=("Helvetica", 12), anchor="center", tags="weather")
+
+        self.root.after(600000, self.update_weather)
+
     def draw_hand(self, x, y, angle, length, width=2, color="black"):
         x_end = x + math.cos(angle) * length
         y_end = y + math.sin(angle) * length
         self.canvas.create_line(x, y, x_end, y_end, width=width, fill=color, tags="hands")
 
+def get_weather(api_key, city="Riga"):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        weather_data = response.json()
+
+        temperature = weather_data['main']['temp']
+        description = weather_data['weather'][0]['description']
+
+        return f"{temperature}°C, {description.capitalize()}"
+    except requests.exceptions.HTTPError as err:
+        return f"Error: {err}"
+    except Exception as e:
+        return f"Error: {e}"
+
 if __name__ == "__main__":
     root = tk.Tk()
-    clock = AnalogClock(root)
+    api_key = 'b571467ac02141716798e4555baa2768'
+    clock = AnalogClock(root, api_key)
     root.mainloop()
