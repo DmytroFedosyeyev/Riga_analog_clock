@@ -2,6 +2,27 @@ import tkinter as tk
 import time
 import math
 import requests
+import calendar
+
+
+LATVIAN_HOLIDAYS = {
+    1: [("01", "Новый год"), ("20", "День памяти защитников баррикад 1991 года"),
+        ("26", "День международного признания Латвийской республики")],
+    2: [("14", "День св. Валентина")],
+    3: [("08", "Международный женский день"), ("25", "День памяти жертв коммунистического геноцида")],
+    4: [("20", "ПАСХА")],
+    5: [("01", "Праздник труда"), ("04", "День независимости Латвии"), ("08", "День Победы над нацизмом"),
+        ("09", "День Европы"), ("15", "День семей"), ("17", "День пожарного и спасателя")],
+    6: [("01", "День защиты детей"), ("17", "День оккупации Латвии"), ("22", "День памяти героев"),
+        ("24", "Лиго")],
+    7: [("4", "День памяти жертв геноцида евреев"), ("14", "Праздник моря")],
+    8: [("11", "День памяти борцов за свободу Латвии"), ("21", "День принятия закона о суверенитете"),
+        ("23", "День памяти жертв сталинизма")],
+    9: [("01", "День знаний"), ("08", "День отца"), ("22", "День балтов")],
+    10: [("01", "День пожилых людей"), ("06", "День учителя")],
+    11: [("07", "День пограничника"), ("11", "День Лачплесиса"), ("18", "День провозглашения Латвии")],
+    12: [("24", "Сочельник"), ("25", "Рождество"), ("31", "Проводы старого года")]
+}
 
 
 class AnalogClock:
@@ -9,7 +30,7 @@ class AnalogClock:
         self.root = root
         self.api_key = api_key
         self.root.title("Riga Analog Clock")
-        self.canvas = tk.Canvas(root, width=400, height=500, bg="white")
+        self.canvas = tk.Canvas(root, width=800, height=500, bg="white")
         self.canvas.pack()
 
         self.center_x = 200
@@ -20,6 +41,7 @@ class AnalogClock:
         self.update_clock()
         self.update_weather()
         self.draw_city_name()
+        self.display_holidays()
 
     def draw_face(self):
         # Рисуем круг лицевой стороны часов
@@ -73,6 +95,17 @@ class AnalogClock:
 
         self.root.after(600000, self.update_weather)
 
+    def display_holidays(self):
+        self.canvas.delete("holidays")
+        current_month = time.localtime().tm_mon
+        holidays = LATVIAN_HOLIDAYS.get(current_month, [])
+        # Получаем название месяца
+        month_name = calendar.month_name[current_month]
+
+        holidays_text = f"Holidays in {month_name}:\n\n" + "\n".join([f"{day}. {name}" for day, name in holidays])
+        self.canvas.create_text(self.center_x + 400, self.center_y - 150, text=holidays_text,
+                                font=("Helvetica", 12), anchor="center", tags="holidays")
+
     def draw_city_name(self):
         self.canvas.create_text(self.center_x, self.center_y + self.clock_radius + 60,
                                 text="Riga", font=("Helvetica", 16, "bold"), anchor="center", tags="city")
@@ -91,7 +124,7 @@ def get_weather(api_key, city="Riga"):
         response.raise_for_status()
         weather_data = response.json()
 
-        temperature = weather_data['main']['temp']
+        temperature = round(weather_data['main']['temp'])
         description = weather_data['weather'][0]['description']
 
         return f"{temperature}°C, {description.capitalize()}"
