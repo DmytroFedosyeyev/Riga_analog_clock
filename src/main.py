@@ -2,34 +2,21 @@ import tkinter as tk
 import time
 import math
 import requests
+import json
 import calendar
-
-
-LATVIAN_HOLIDAYS = {
-    1: [("01", "Новый год"), ("20", "День памяти защитников баррикад 1991 года"),
-        ("26", "День международного признания Латвийской республики")],
-    2: [("14", "День св. Валентина")],
-    3: [("08", "Международный женский день"), ("25", "День памяти жертв коммунистического геноцида")],
-    4: [("20", "ПАСХА")],
-    5: [("01", "Праздник труда"), ("04", "День независимости Латвии"), ("08", "День Победы над нацизмом"),
-        ("09", "День Европы"), ("15", "День семей"), ("17", "День пожарного и спасателя")],
-    6: [("01", "День защиты детей"), ("17", "День оккупации Латвии"), ("22", "День памяти героев"),
-        ("24", "Лиго")],
-    7: [("4", "День памяти жертв геноцида евреев"), ("14", "Праздник моря")],
-    8: [("11", "День памяти борцов за свободу Латвии"), ("21", "День принятия закона о суверенитете"),
-        ("23", "День памяти жертв сталинизма")],
-    9: [("01", "День знаний"), ("08", "День отца"), ("22", "День балтов")],
-    10: [("01", "День пожилых людей"), ("06", "День учителя")],
-    11: [("07", "День пограничника"), ("11", "День Лачплесиса"), ("18", "День провозглашения Латвии")],
-    12: [("24", "Сочельник"), ("25", "Рождество"), ("31", "Проводы старого года")]
-}
+import os
 
 
 class AnalogClock:
     def __init__(self, root, api_key):
         self.root = root
         self.api_key = api_key
-        self.root.title("Riga Analog Clock")
+        self.lang = 'en'
+        self.translations = self.load_translations(self.lang)
+
+        # Устанавливаем название окна сразу после инициализации
+        self.root.title(self.translations.get('app_title', 'Analog Clock'))
+
         self.canvas = tk.Canvas(root, width=800, height=500, bg="white")
         self.canvas.pack()
 
@@ -37,21 +24,54 @@ class AnalogClock:
         self.center_y = 200
         self.clock_radius = 190
 
+        self.create_menu()
         self.draw_face()
         self.update_clock()
         self.update_weather()
-        self.draw_city_name()
         self.display_holidays()
+        self.draw_city_name()
+
+    def load_translations(self, lang):
+        """Загрузка перевода для текущего языка"""
+        try:
+            translation_file = f"{lang}.json"
+            if os.path.exists(translation_file):
+                with open(translation_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            return {}  # Возвращаем пустой словарь, если файл не найден
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Ошибка при загрузке файла перевода {lang}.json: {e}")
+            return {}  # Пустой словарь при ошибке загрузки файла
+
+    def create_menu(self):
+        """Создание меню для выбора языка"""
+        menu = tk.Menu(self.root)
+        self.root.config(menu=menu)
+
+        lang_menu = tk.Menu(menu)
+        menu.add_cascade(label=self.translations.get('language_menu', 'Language'), menu=lang_menu)
+        lang_menu.add_command(label=self.translations.get('english', 'English'),
+                              command=lambda: self.change_language('en'))
+        lang_menu.add_command(label=self.translations.get('russian', 'Русский'),
+                              command=lambda: self.change_language('ru'))
+
+    def change_language(self, lang):
+        """Изменение языка приложения"""
+        self.lang = lang
+        self.translations = self.load_translations(lang)
+        self.root.title(self.translations.get('app_title', 'Analog Clock'))  # Обновляем название окна
+        self.display_holidays()
+        self.draw_city_name()
 
     def draw_face(self):
-        # Рисуем круг лицевой стороны часов
+        # лицевой круг стороны часов
         self.canvas.create_oval(self.center_x - self.clock_radius,
                                 self.center_y - self.clock_radius,
                                 self.center_x + self.clock_radius,
                                 self.center_y + self.clock_radius,
-                                outline="black", width=5)
+                                outline="blue", width=5)
 
-        # Рисуем метки и цифры
+        # метки и цифры
         for i in range(60):
             angle = math.pi / 30 * i
             x_start = self.center_x + math.cos(angle) * (self.clock_radius - 10)
@@ -98,17 +118,19 @@ class AnalogClock:
     def display_holidays(self):
         self.canvas.delete("holidays")
         current_month = time.localtime().tm_mon
-        holidays = LATVIAN_HOLIDAYS.get(current_month, [])
-        # Получаем название месяца
-        month_name = calendar.month_name[current_month]
-
-        holidays_text = f"Holidays in {month_name}:\n\n" + "\n".join([f"{day}. {name}" for day, name in holidays])
-        self.canvas.create_text(self.center_x + 400, self.center_y - 150, text=holidays_text,
+        holidays = self.translations.get('holidays', {}).get(str(current_month), [])
+        month_name = self.translations.get('month_names', {}).get(str(current_month), calendar.month_name[current_month])
+        holidays_text = f"{self.translations.get('holidays_title', 'Holidays in')} {month_name}:\n\n" + \
+                        "\n".join(
+                            [f"{day}. {name}" for day_name_pair in holidays for day, name in day_name_pair.items()])
+        self.canvas.create_text(self.center_x + 400, self.center_y - 120, text=holidays_text,
                                 font=("Helvetica", 12), anchor="center", tags="holidays")
 
     def draw_city_name(self):
+        self.canvas.delete("city")
         self.canvas.create_text(self.center_x, self.center_y + self.clock_radius + 60,
-                                text="Riga", font=("Helvetica", 16, "bold"), anchor="center", tags="city")
+                                text=self.translations.get('city_name', 'Riga'), font=("Helvetica", 16, "bold"),
+                                anchor="center", tags="city")
 
     def draw_hand(self, x, y, angle, length, width=2, color="black"):
         x_end = x + math.cos(angle) * length
@@ -128,14 +150,16 @@ def get_weather(api_key, city="Riga"):
         description = weather_data['weather'][0]['description']
 
         return f"{temperature}°C, {description.capitalize()}"
-    except requests.exceptions.HTTPError as err:
-        return f"Error: {err}"
+    except requests.exceptions.RequestException:
+        return "Weather data unavailable"
+    except KeyError:
+        return "Invalid weather data format"
     except Exception as e:
         return f"Error: {e}"
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    api_key = 'b571467ac02141716798e4555baa2768'  # Замените на свой актуальный API ключ
+    api_key = 'b571467ac02141716798e4555baa2768'  # актуальный API ключ
     clock = AnalogClock(root, api_key)
     root.mainloop()

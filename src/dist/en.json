@@ -1,0 +1,82 @@
+{
+  "app_title": "Analog Clock",
+  "language_menu": "Language",
+  "english": "English",
+  "russian": "Русский",
+  "holidays_title": "Holidays in",
+  "city_name": "Riga",
+  "holidays": {
+    "1": [
+      {"01": "New Year's Day"},
+      {"20": "Defender of the Barricades Day"},
+      {"26": "Day of International Recognition of the Republic of Latvia"}
+    ],
+    "2": [
+      {"14": "Valentine's Day"}
+    ],
+    "3": [
+      {"08": "International Women's Day"},
+      {"25": "Memorial Day for Victims of Communist Genocide"}
+    ],
+    "4": [
+      {"20": "Easter"}
+    ],
+    "5": [
+      {"01": "Labour Day"},
+      {"04": "Restoration of Independence Day"},
+      {"08": "Victory Day"},
+      {"09": "Europe Day"},
+      {"15": "International Day of Families"},
+      {"17": "Firefighter and Rescuer Day"}
+    ],
+    "6": [
+      {"01": "International Children's Day"},
+      {"17": "Occupation of Latvia Day"},
+      {"22": "Heroes' Commemoration Day"},
+      {"24": "Jāņi (Midsummer's Eve)"}
+    ],
+    "7": [
+      {"04": "Holocaust Memorial Day"},
+      {"14": "Sea Festival"}
+    ],
+    "8": [
+      {"11": "Freedom Fighters' Remembrance Day"},
+      {"17": "Riga City Festival"},
+      {"21": "Day of the Adoption of the Sovereignty Declaration"},
+      {"23": "Memorial Day for Victims of Stalinism and Nazism"}
+    ],
+    "9": [
+      {"01": "Knowledge Day"},
+      {"08": "Father's Day"},
+      {"22": "Baltic Unity Day"}
+    ],
+    "10": [
+      {"01": "International Day of Older Persons"},
+      {"06": "Teacher's Day"}
+    ],
+    "11": [
+      {"07": "Border Guard Day"},
+      {"11": "Lāčplēsis Day"},
+      {"18": "Proclamation Day of the Republic of Latvia"}
+    ],
+    "12": [
+      {"24": "Christmas Eve"},
+      {"25": "Christmas Day"},
+      {"31": "New Year's Eve"}
+    ]
+  },
+  "month_names": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  }
+}
